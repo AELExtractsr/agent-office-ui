@@ -114,3 +114,6 @@ await fetch("http://127.0.0.1:8081/api/office/report", { method: "POST", headers
 - Don't poll faster than the page already does (5s status, 15s alerts) or add per-report push notifications. The dedupe and cooldown are deliberate.
 - Don't require users to set up Cloudflare. Remote mode is opt-in.
 - Don't run the office core on the Edge runtime. The routes use `runtime = "nodejs"` because state lives in the file system and process memory.
+
+## Connecting Grok Bots
+Grok Bots run in the cloud and can't reach localhost. See [GROKBOT_SETUP.md](GROKBOT_SETUP.md) for the relay options (Worker or ntfy), `office/server/relay-pull.mjs`, and the copy-paste instruction block for each bot.

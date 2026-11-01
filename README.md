@@ -5,6 +5,8 @@ A live, isometric "office" that shows what each of your agents is doing. Every a
 - **Local mode (default):** runs inside your app at `/office` with no accounts, no Cloudflare, and no passcode on localhost.
 - **Remote mode (optional):** a Cloudflare Worker with a passcode, so you can open it from your phone. See `REMOTE_ACCESS.md`.
 
+No Cloudflare or accounts needed for the office itself. Connecting Grok Bots takes a quick one-time setup per member — see GROKBOT_SETUP.md.
+
 Quick try (Node 18+):
 ```bash
 node office/build.mjs

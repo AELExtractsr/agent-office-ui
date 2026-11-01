@@ -179,6 +179,7 @@ export class Office extends DurableObject {
   }
   async addCmd(c) { const q = (await this.ctx.storage.get("cmds")) || []; q.push(c); while (q.length > 200) q.shift(); await this.ctx.storage.put("cmds", q); }
   async listCmds(n = 40) { return ((await this.ctx.storage.get("cmds")) || []).slice(-n); }
+  async takeInbox(slug) { const now = Math.floor(Date.now() / 1000), q = (await this.ctx.storage.get("cmds")) || [], out = q.filter((c) => c.state === "queued" && c.slug === slug); out.forEach((c) => { c.state = "delivered"; c.delivered_at = now; }); if (out.length) await this.ctx.storage.put("cmds", q); return out; }
   async pending() { return ((await this.ctx.storage.get("cmds")) || []).filter((c) => c.state === "queued"); }
   async ack(b) {
     const now = Math.floor(Date.now() / 1000), del = new Set(b.delivered || []), seen = new Set(b.seen || []), rm = new Set(b.remove || []);
@@ -223,6 +224,23 @@ export default {
       return send(200, '{"ok":true}', "application/json");
     }
 
+    if (path === "/export" && m === "GET") { // relay: local OS pulls current statuses, Bearer PUSH_TOKEN
+      if (!(await bearer(req, env.PUSH_TOKEN))) return J(401, { error: "unauthorized" });
+      return J(200, await office.getStatus());
+    }
+    if (path === "/enqueue" && m === "POST") { // relay: local OS forwards approve/decline/nudge for bots, Bearer PUSH_TOKEN
+      if (!(await bearer(req, env.PUSH_TOKEN))) return J(401, { error: "unauthorized" });
+      let b; try { b = await readJson(req); } catch (e) { return J(e, { error: "bad json" }); }
+      const bot = String(b.bot || "").trim().slice(0, 120), action = b.action, text = String(b.text ?? "").slice(0, 500);
+      if (!bot || !["approve", "decline", "nudge"].includes(action)) return J(400, { error: "bot and action required" });
+      const c = { id: String(b.id || crypto.randomUUID()).slice(0, 64), bot, slug: slugify(bot), action, text, created: Math.floor(Date.now() / 1000), state: "queued" };
+      await office.addCmd(c); return J(200, c);
+    }
+    if (path === "/inbox" && m === "GET") { // bots read their commands, Bearer REPORT_TOKEN; marks them delivered
+      if (!(await bearer(req, env.REPORT_TOKEN))) return J(401, { error: "unauthorized" });
+      const slug = slugify(String(url.searchParams.get("bot") || "").trim()); if (!slug) return J(400, { error: "bot required" });
+      return J(200, await office.takeInbox(slug));
+    }
     if (path === "/pull" || path === "/ack") { // box <-> worker command queue, Bearer PUSH_TOKEN
       if (!(await bearer(req, env.PUSH_TOKEN))) return J(401, { error: "unauthorized" });
       if (path === "/pull" && m === "GET") return J(200, await office.pending());

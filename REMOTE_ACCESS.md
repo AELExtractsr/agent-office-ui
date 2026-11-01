@@ -50,3 +50,8 @@ Remote endpoints have no `/api/office` prefix:
 - After a deploy, the Durable Object can keep running the old code while traffic keeps it warm. The Worker then answers `/api/alerts` with `"pending"`. Pause any sync job for 2–3 minutes and the object will restart on the new code.
 - Rotating `OFFICE_PASSCODE` or `COOKIE_SECRET` logs everyone out.
 - After 5 wrong passcodes from one IP (40 across all IPs), login locks for 10 minutes. `POST /reset-lockout` with `Bearer PUSH_TOKEN` clears it.
+
+## Relay endpoints for Grok Bots
+The Worker also acts as the relay in GROKBOT_SETUP.md, Option 1:
+- `GET /inbox?bot=<name>` uses `Bearer REPORT_TOKEN`. Bots read their queued commands, which are then marked delivered.
+- `GET /export` and `POST /enqueue` use `Bearer PUSH_TOKEN`. `office/server/relay-pull.mjs` mirrors statuses into your local office and forwards page commands.
