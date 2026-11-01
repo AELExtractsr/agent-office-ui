@@ -1,0 +1,25 @@
+# Copy to wrangler.toml. Pick your own unique Worker name.
+name = "agent-office"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[vars]
+OFFICE_TITLE = "Agent Office"
+# OFFICE_URL = "https://<your-worker>.<your-subdomain>.workers.dev/"   # link opened from phone pushes
+# OFFICE_ROSTER_JSON = '{"bots":[{"id":"assistant","name":"Assistant","color":"#4c8dff","shape":"circle","primary":true}]}'
+# ALERT_STUCK_MIN = "30"
+# ALERT_COOLDOWN_MIN = "15"
+
+[[durable_objects.bindings]]
+name = "OFFICE"
+class_name = "Office"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Office"]
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = false

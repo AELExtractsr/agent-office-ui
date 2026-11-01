@@ -1,0 +1,11 @@
+{
+  "title": "Agent Office",
+  "bots": [
+    { "id": "assistant",  "name": "Assistant",      "role": "Primary assistant",    "color": "#4c8dff", "shape": "circle",   "primary": true },
+    { "id": "researcher", "name": "Researcher",     "role": "Web research",         "color": "#ff8a3d", "shape": "hexagon" },
+    { "id": "writer",     "name": "Writer",         "role": "Drafts & copy",        "color": "#38d27a", "shape": "rounded" },
+    { "id": "analyst",    "name": "Analyst",        "role": "Data & reports",       "color": "#8e5cff", "shape": "diamond" },
+    { "id": "social",     "name": "Social Manager", "short": "Social", "role": "Posting & engagement", "color": "#19d3c5", "shape": "triangle", "aliases": ["Social Bot"] },
+    { "id": "inbox",      "name": "Inbox Triage",   "short": "Inbox",  "role": "Email triage",         "color": "#ffc93c", "shape": "square" }
+  ]
+}
