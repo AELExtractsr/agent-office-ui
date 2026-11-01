@@ -1,3 +1,9 @@
-.office-data/
 node_modules/
+.office-data/
+.wrangler/
 .env
+*.token
+.ntfy_topic
+remote/worker/wrangler.toml
+remote/worker/src/app.html
+__pycache__/

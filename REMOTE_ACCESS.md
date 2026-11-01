@@ -16,6 +16,9 @@ npm install --no-save wrangler
 ```
 
 ## 3. Secrets (each one is stored only in Cloudflare)
+Shortcut: deploy first (step 4), then run `box-client/setup-secrets.sh`. It generates all four secrets, keeps the push token, report token and passcode in `$OFFICE_DIR` (default `/workspace/office-status`, mode 600), and prints nothing secret.
+
+Or set them by hand:
 Generate random values. Never paste them into chat, code, or logs.
 ```bash
 gen() { node -e 'process.stdout.write(require("crypto").randomBytes(32).toString("hex"))'; }
@@ -29,19 +32,21 @@ npx wrangler secret put OFFICE_PASSCODE       # you type it. It's what you enter
 ```bash
 ./deploy.sh        # builds office/dist/office.html → src/app.html, then runs wrangler deploy
 ```
-Open `https://<name>.<your-subdomain>.workers.dev/` and enter the passcode.
+Open `https://<name>.<your-subdomain>.workers.dev/` and enter the passcode. Until the secrets are set, the Worker answers "Not configured".
+
+**Embedding:** `frame-ancestors` (the `SEC` headers in `src/worker.js`) allows `http://127.0.0.1:8081` and `http://localhost:8081`; edit it for other origins. The session cookie is `SameSite=None; Secure; Partitioned`, so login works inside an iframe in Chromium browsers. Where third-party cookies are blocked, open the office in its own tab.
 
 ## 5. Point agents at it
 Remote endpoints have no `/api/office` prefix:
 - `POST /report` with `Authorization: Bearer <REPORT_TOKEN>`. The body is the same as in local mode (see CLAUDE.md "Data contract").
-- `POST /push` with `Authorization: Bearer <PUSH_TOKEN>`. The body is `{slug: status}` for the whole box. This counts as each bot's "own" status.
+- `POST` or `PUT /push` with `Authorization: Bearer <PUSH_TOKEN>`. The body is `{slug: status}` for the whole box (this is what `box-client/sync.py` sends). This counts as each bot's "own" status.
 - `GET /pull` and `POST /ack` with `Bearer <PUSH_TOKEN>`. These read the command inbox (approve, decline, nudge).
 - The page uses `/api/status`, `/api/alerts`, `/api/command` and `/api/commands`, which need the login cookie.
 
 ## 6. Phone alerts with ntfy (optional)
 1. Generate a long random topic name and treat it like a password:
    `node -e 'process.stdout.write("office-"+require("crypto").randomBytes(16).toString("hex"))' > .ntfy_topic && chmod 600 .ntfy_topic`
-2. `npx wrangler secret put NTFY_TOPIC < .ntfy_topic`. Add `.ntfy_topic` to `.gitignore`.
+2. `npx wrangler secret put NTFY_TOPIC < .ntfy_topic`. Add `.ntfy_topic` to `.gitignore`. Or run `box-client/setup-ntfy.sh`, which does steps 1–2 and stores the topic in `$OFFICE_DIR`.
 3. Install the **ntfy** app (iOS App Store or Google Play) and subscribe to that same topic on the default server (ntfy.sh).
 4. Optional: set `OFFICE_URL` in `[vars]` so tapping a push opens the office. Use `NTFY_SERVER` for a self-hosted ntfy.
 5. Tune with `ALERT_STUCK_MIN` (default 30) and `ALERT_COOLDOWN_MIN` (default 15). The hard cap is 20 pushes per hour.

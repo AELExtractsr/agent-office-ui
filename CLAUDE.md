@@ -18,6 +18,8 @@ office/server/server.mjs     standalone zero-dependency server, for testing outs
 office/roster.example.json   generic roster example
 next-integration/src/...     drop-in Next files (lib/office/office.ts, app/office/route.ts, app/api/office/[...path]/route.ts)
 remote/worker/               optional Cloudflare Worker (remote mode). See REMOTE_ACCESS.md.
+office/server/relay-pull.mjs  local pull job: mirrors a relay (Worker or ntfy) into /api/office. See GROKBOT_SETUP.md.
+box-client/                  scripts for Grok Bots sharing one box (status files, inbox, sync to the Worker). See GROKBOT_QUICKSTART.md.
 ```
 
 ## Integration steps
@@ -116,4 +118,6 @@ await fetch("http://127.0.0.1:8081/api/office/report", { method: "POST", headers
 - Don't run the office core on the Edge runtime. The routes use `runtime = "nodejs"` because state lives in the file system and process memory.
 
 ## Connecting Grok Bots
-Grok Bots run in the cloud and can't reach localhost. See [GROKBOT_SETUP.md](GROKBOT_SETUP.md) for the relay options (Worker or ntfy), `office/server/relay-pull.mjs`, and the copy-paste instruction block for each bot.
+Grok Bots run in the cloud and can't reach localhost. There are two supported paths:
+- **Hosted:** the member's Grok Bot hosts the office on the Worker and the OS only embeds its URL (an iframe in the crew workspace, alongside or instead of `/office`). See [GROKBOT_QUICKSTART.md](GROKBOT_QUICKSTART.md).
+- **Local:** keep `/office` local and mirror bot status in. See [GROKBOT_SETUP.md](GROKBOT_SETUP.md) for the relay options (Worker or ntfy), `office/server/relay-pull.mjs`, and the copy-paste instruction block for each bot.

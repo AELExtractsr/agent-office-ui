@@ -1,5 +1,7 @@
 # Connecting your Grok Bots to the Agent Office
 
+> **Easier path:** if you'd rather have your main Grok Bot host the whole office, with no local pull job, see **GROKBOT_QUICKSTART.md**. This file is for running the office **inside your local Agentic OS** while your Grok Bots report in from the cloud.
+
 The office runs on your machine (`http://127.0.0.1:8081/office`). Your Grok Bots run on their own cloud box, so **they can't reach your localhost**. They report to a small **relay** on the internet, and a pull job on your machine mirrors that relay into the local office. The pull job also sends your Approve, Decline and Nudge clicks back to the relay.
 
 ```
@@ -27,7 +29,7 @@ Relay endpoints:
 
 ## Option 2: ntfy topics (no account)
 
-This option needs no account. Bots publish to a private [ntfy](https://ntfy.sh) topic, and your machine polls it. **The topic name is the only secret.** Anyone who knows it can read or post, so use long random names. Messages also pass through the public ntfy.sh server; you can self-host ntfy and set `NTFY_BASE`.
+This option needs no account. Bots publish to a private [ntfy](https://ntfy.sh) topic, and your machine polls it. **The topic name is the only secret.** Anyone who knows it can read or post, so use long random names. Messages also pass through the public ntfy.sh server; you can self-host ntfy and set `NTFY_SERVER`.
 
 1. Pick two random topic names, one for status and one for commands. For example, run `openssl rand -hex 16` twice.
 2. Start the pull job:
@@ -54,7 +56,7 @@ Report your status with:
 - When finished: state "idle", task "done: <one-line result>". Use "error" if something failed.
 Every run, before you start, check your inbox:
   curl -s "<RELAY_URL>/inbox?bot=<BOT NAME>" -H "Authorization: Bearer <REPORT_TOKEN>"
-It returns a JSON list of {action, text}. "approve" means go ahead. "decline" means stop or skip it. "nudge" means follow the text.
+It returns a JSON list of {action, text}. Each command is returned once. "approve" means go ahead. "decline" means stop or skip it. "nudge" means follow the text.
 Keep the token private and never print it in chat or logs.
 ````
 
@@ -75,7 +77,7 @@ Keep the topic names private and never print them in chat or logs.
 ````
 
 ## Notes
-- **States:** `working`, `needs_you`, `idle`, `error`. A `working` bot with no update for `ALERT_STUCK_MIN` minutes (default 20) raises a "stuck" alert.
+- **States:** `working`, `needs_you`, `idle`, `error`. A `working` bot with no update for `ALERT_STUCK_MIN` minutes (default 30) raises a "stuck" alert.
 - **Spaces in names:** in the inbox URL, write spaces as `%20`.
 - **Timestamps:** the office keeps each bot's own report time, so staleness reflects when the bot reported, not when your machine polled.
 - **Pull job stopped:** bots keep reporting to the relay, and the office catches up when the job restarts. With ntfy, it catches up on the last hour.
