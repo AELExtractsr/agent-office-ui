@@ -152,5 +152,16 @@ export function renderPage(html, config) {
 // Roster file: OFFICE_ROSTER (path) or ./roster.json -> { title?, bots: [] }. Missing file -> no bots (page shows a demo roster).
 export function loadRoster(env = process.env) {
   const f = env.OFFICE_ROSTER || join(process.cwd(), "roster.json");
-  try { const j = JSON.parse(readFileSync(f, "utf8")); return Array.isArray(j) ? { bots: j } : { title: j.title, bots: Array.isArray(j.bots) ? j.bots : [] }; } catch { return { bots: [] }; }
+  try { const j = JSON.parse(readFileSync(f, "utf8")); return Array.isArray(j) ? { bots: j } : { title: j.title, sign: j.sign, bots: Array.isArray(j.bots) ? j.bots : [] }; } catch { return { bots: [] }; }
+}
+
+// Neon wall sign: env OFFICE_SIGN_LEFT / OFFICE_SIGN_RIGHT (default "AGENTIC OS" × "GROK BOT"), OFFICE_SIGN=off for the plain title panel.
+// roster.json may also carry "sign": { left, right, leftColor?, rightColor?, mark? } or false. Env wins.
+export function signConfig(env = process.env, fromRoster) {
+  if (/^(off|false|0|none)$/i.test(env.OFFICE_SIGN || "") || fromRoster === false) return false;
+  const r = fromRoster && typeof fromRoster === "object" ? fromRoster : {};
+  const out = { ...r };
+  if (env.OFFICE_SIGN_LEFT) out.left = env.OFFICE_SIGN_LEFT;
+  if (env.OFFICE_SIGN_RIGHT) out.right = env.OFFICE_SIGN_RIGHT;
+  return out;
 }

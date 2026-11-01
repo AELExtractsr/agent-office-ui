@@ -47,11 +47,13 @@ body.mode-night .selflit{opacity:1}
 #glowNeon .flick{animation:flick 7.3s infinite steps(1,end)}
 #glowNeon .flick2{animation:flick 9.1s 2.4s infinite steps(1,end)}
 #glowNeon .flick3{animation:flickx 6.1s 1s infinite steps(1,end)}
+#glowNeon .neon-left,#glowNeon .neon-right{animation:neonOn 1.1s .3s both steps(1,end)}
+#glowNeon .neon-right{animation-delay:.45s}
 #glowNeon .neon-x{animation:neonOnX .9s 1.55s both steps(1,end)}
 @keyframes neonOn{0%{opacity:0}18%{opacity:.7}24%{opacity:.1}40%{opacity:.85}48%{opacity:.3}60%,100%{opacity:1}}
 @keyframes neonOnX{0%{opacity:0}20%{opacity:.8}30%{opacity:0}52%{opacity:.6}60%{opacity:.15}75%,100%{opacity:1}}
 @keyframes flickx{0%,100%{opacity:1}31%{opacity:.6}31.5%{opacity:1}74%{opacity:.75}74.6%{opacity:1}}
-@media (prefers-reduced-motion:reduce){#glowNeon .flick,#glowNeon .flick2,#glowNeon .flick3,#glowNeon .neon-x{animation:none!important;opacity:1}}
+@media (prefers-reduced-motion:reduce){#glowNeon .flick,#glowNeon .flick2,#glowNeon .flick3,#glowNeon .neon-left,#glowNeon .neon-right,#glowNeon .neon-x{animation:none!important;opacity:1}}
 @keyframes flick{0%,100%{opacity:1}12%{opacity:.82}12.6%{opacity:1}57%{opacity:1}57.4%{opacity:.5}58%{opacity:1}58.6%{opacity:.7}59.2%{opacity:1}}
 #daylight{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:var(--dayO);transition:opacity 1.3s ease;
   background:radial-gradient(70% 60% at 22% 8%, rgba(255,246,222,.30), rgba(255,246,222,0) 70%), radial-gradient(90% 80% at 50% 40%, rgba(255,255,255,.07), transparent 70%)}

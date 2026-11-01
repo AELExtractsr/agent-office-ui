@@ -40,6 +40,7 @@ teammate bots ◀─ check-inbox.sh ◀─ inbox/ ◀─────────
    - Set a unique `name`, for example `agent-office-<4 random chars>`.
    - Set `OFFICE_TITLE`.
    - Set `OFFICE_ROSTER_JSON` with one entry per teammate: `{"id","name","color","shape"}`. Use each bot's exact display name, and its color (`#rrggbb`) and shape as shown in the Grok app. Valid shapes are `circle | square | rounded | hexagon | triangle | diamond | star | pill`. Mark yourself `"primary":true`.
+   - **Optional, neon sign:** the default is "AGENTIC OS × GROK BOT". To change it, add `OFFICE_SIGN_LEFT = "..."` and/or `OFFICE_SIGN_RIGHT = "..."` to `[vars]`, or `OFFICE_SIGN = "off"` for a plain title.
 4. **Deploy, then set the secrets**
    ```bash
    ./deploy.sh | tee /workspace/office-status/deploy.log

@@ -27,7 +27,7 @@ const loginPage = (err) => LOGIN_HTML.replace("@@ERR@@", err);
 // Page config: roster from the OFFICE_ROSTER_JSON var ({ title?, bots:[...] } or an array), API under /api
 function appPage(env) {
   let r = {}; try { const j = JSON.parse(env.OFFICE_ROSTER_JSON || "{}"); r = Array.isArray(j) ? { bots: j } : j; } catch {}
-  const cfg = JSON.stringify({ title: env.OFFICE_TITLE || r.title || "Agent Office", apiBase: "/api", loginUrl: "/", roster: Array.isArray(r.bots) ? r.bots : [] }).replace(/</g, "\\u003c");
+  const cfg = JSON.stringify({ title: env.OFFICE_TITLE || r.title || "Agent Office", sign: /^(off|false|0|none)$/i.test(env.OFFICE_SIGN || "") || r.sign === false ? false : { ...(r.sign && typeof r.sign === "object" ? r.sign : {}), ...(env.OFFICE_SIGN_LEFT ? { left: env.OFFICE_SIGN_LEFT } : {}), ...(env.OFFICE_SIGN_RIGHT ? { right: env.OFFICE_SIGN_RIGHT } : {}) }, apiBase: "/api", loginUrl: "/", roster: Array.isArray(r.bots) ? r.bots : [] }).replace(/</g, "\\u003c");
   return APP_HTML.replace("<!--OFFICE_CONFIG-->", `<script>window.OFFICE_CONFIG=${cfg};</script>`);
 }
 

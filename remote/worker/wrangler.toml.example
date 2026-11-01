@@ -8,6 +8,9 @@ workers_dev = true
 OFFICE_TITLE = "Agent Office"
 # OFFICE_URL = "https://<your-worker>.<your-subdomain>.workers.dev/"   # link opened from phone pushes
 # OFFICE_ROSTER_JSON = '{"bots":[{"id":"assistant","name":"Assistant","color":"#4c8dff","shape":"circle","primary":true}]}'
+# OFFICE_SIGN_LEFT = "AGENTIC OS"     # neon wall sign, left (green) text
+# OFFICE_SIGN_RIGHT = "GROK BOT"      # right (ice-blue) text with bot-head mark
+# OFFICE_SIGN = "off"                 # plain title panel instead of the neon sign
 # ALERT_STUCK_MIN = "30"
 # ALERT_COOLDOWN_MIN = "15"
 

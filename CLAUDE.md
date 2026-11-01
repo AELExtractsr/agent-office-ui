@@ -55,6 +55,12 @@ Each bot needs `{ id, name, color, shape }`. Optional fields: `short`, `role`, `
 - With no roster at all, the page shows a generic demo roster in "Demo" mode.
 - Matching reports to desks: a report's `name` matches a bot by name, `short`, `id` or `aliases`, ignoring case and punctuation. 9 desks; bots 10–18 share desks two to a desk.
 
+## Neon wall sign
+- **Default:** "AGENTIC OS" × "GROK BOT", drawn in `buildNeonSign()` in `office/src/03_scene.js`. It uses a single-stroke tube font covering A–Z, 0–9 and `& - . + !`, and other characters are skipped. Both sides share the same tube width and baseline. Flicker is turned off under `prefers-reduced-motion`.
+- **Page config:** `window.OFFICE_CONFIG.sign = { left, right, leftColor?, rightColor?, mark?, stack? }`, or `false` for the plain title panel. `mark` (default true) shows the bot head on the right. `stack: true` puts the first word big with the rest small underneath.
+- **Server side:** `signConfig(env, roster.sign)` in office-core builds it from `OFFICE_SIGN_LEFT`, `OFFICE_SIGN_RIGHT` and `OFFICE_SIGN=off`, plus an optional `"sign"` in roster.json. Env wins. `officePage()` already passes it.
+- **Layout:** text auto-fits inside the `SIGN` panel (x 5.2–13.2 on the back wall), which sits clear of the window and bookshelf. Labels already avoid `SIGN`. Don't place props on the back wall in that span.
+
 ## Data contract (local base: `/api/office`)
 | Method | Path | Body / query | Notes |
 |---|---|---|---|

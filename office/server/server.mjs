@@ -2,7 +2,7 @@
 //   node office/build.mjs && node office/server/server.mjs      -> http://127.0.0.1:8790/office
 // Env: OFFICE_PORT (8790), OFFICE_ROSTER (roster.json path), OFFICE_TITLE, OFFICE_DATA_DIR, NTFY_TOPIC, ALERT_STUCK_MIN, ALERT_COOLDOWN_MIN
 import http from "node:http";
-import { createOffice, handle, renderPage, loadRoster } from "./office-core.mjs";
+import { createOffice, handle, renderPage, loadRoster, signConfig } from "./office-core.mjs";
 import HTML from "../dist/office-html.mjs";
 
 const PORT = Number(process.env.OFFICE_PORT || 8790), BASE = "/api/office";
@@ -15,7 +15,7 @@ http.createServer(async (req, res) => {
   if (url.pathname === "/" || url.pathname === "/office") {
     if (!local) return send(403, "local only", "text/plain");
     const rf = loadRoster();
-    return send(200, renderPage(HTML, { title: process.env.OFFICE_TITLE || rf.title || "Agent Office", apiBase: BASE, roster: rf.bots }), "text/html; charset=utf-8");
+    return send(200, renderPage(HTML, { title: process.env.OFFICE_TITLE || rf.title || "Agent Office", sign: signConfig(process.env, rf.sign), apiBase: BASE, roster: rf.bots }), "text/html; charset=utf-8");
   }
   if (!url.pathname.startsWith(BASE)) return send(404, '{"error":"not found"}');
   let raw = ""; for await (const c of req) { raw += c; if (raw.length > 65536) return send(413, '{"error":"too large"}'); }

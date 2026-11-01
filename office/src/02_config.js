@@ -4,7 +4,7 @@
 /* ==========================================================================
    AGENT OFFICE — single-file page (built from office/src/*)
    Runtime config is injected by the server as window.OFFICE_CONFIG:
-     { title, apiBase, roster:[{ id, name, short?, role?, color, shape, aliases?, primary?, desk?, idleNote?, tasks? }] }
+     { title, apiBase, sign?:{left,right,leftColor?,rightColor?,mark?}|false, roster:[{ id, name, short?, role?, color, shape, aliases?, primary?, desk?, idleNote?, tasks? }] }
    ========================================================================== */
 const OFFICE_CONFIG = Object.assign({ title:'Agent Office', apiBase:'/api/office', roster:null }, window.OFFICE_CONFIG || {});
 const API = OFFICE_CONFIG.apiBase.replace(/\/+$/,'');

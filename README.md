@@ -33,6 +33,8 @@ curl -s -X POST http://127.0.0.1:8790/api/office/report \
 ```
 Inside the Next app, the same API is at `http://127.0.0.1:8081/api/office/...`.
 
+Neon wall sign: the default is **AGENTIC OS × GROK BOT** (a green tube on the left, ice-blue `#8fd8ff` with a bot-head mark on the right). Change it with `OFFICE_SIGN_LEFT` / `OFFICE_SIGN_RIGHT`, or set `OFFICE_SIGN=off` for a plain title panel. The same settings work in the Worker `[vars]` and the Next app env. A `"sign"` object in roster.json also works.
+
 ## What's in the box
 - `office/`: page source, build script, standalone server and core (`office/server/`), and the relay pull script (`office/server/relay-pull.mjs`).
 - `next-integration/`: drop-in Next.js route files.
