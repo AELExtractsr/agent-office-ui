@@ -15,8 +15,8 @@ teammate bots ◀─ check-inbox.sh ◀─ inbox/ ◀─────────
 ## What the member provides
 1. **A Cloudflare account.** The free plan is fine. Open *Workers & Pages* once in the dashboard so the account has a `workers.dev` subdomain.
 2. **A Cloudflare API token:** *My Profile → API Tokens → Create Token → "Edit Cloudflare Workers"* template. Send it to the bot through the bot's secure secret or credential form, never in plain chat.
-   - If the token can access more than one account, also provide the **Account ID**, shown on the dashboard's right sidebar.
-3. **Optional:** the **ntfy** app on their phone, for alerts.
+3. **The Cloudflare Account ID (required, even if the token covers only one account).** It's shown on the dashboard's right sidebar. Without it, wrangler fails on `/memberships` with error 9106.
+4. **Optional:** the **ntfy** app on their phone, for alerts.
 
 ## Steps for the Grok Bot
 `D=/workspace/office-status` holds runtime state and secrets, all mode 600. `R=/workspace/agent-office-ui` is the repo.
@@ -28,13 +28,13 @@ teammate bots ◀─ check-inbox.sh ◀─ inbox/ ◀─────────
    ```
 2. **Store the Cloudflare token.** Write it from the secret form straight to `$D/.cf_token` with `umask 077`, without echoing it. In every later wrangler command, load it inline:
    ```bash
-   export CLOUDFLARE_API_TOKEN="$(cat /workspace/office-status/.cf_token)"   # add CLOUDFLARE_ACCOUNT_ID=... if provided
+   export CLOUDFLARE_API_TOKEN="$(cat /workspace/office-status/.cf_token)" CLOUDFLARE_ACCOUNT_ID="<ACCOUNT_ID>"   # both required
    ```
 3. **Configure the Worker**
    ```bash
    cd /workspace/agent-office-ui/remote/worker
    cp wrangler.toml.example wrangler.toml
-   npm install --no-save wrangler
+   npm install --no-save wrangler      # package.json ({"private":true}) is included so this works
    ```
    In `wrangler.toml`:
    - Set a unique `name`, for example `agent-office-<4 random chars>`.
@@ -49,7 +49,8 @@ teammate bots ◀─ check-inbox.sh ◀─ inbox/ ◀─────────
    - `setup-secrets.sh` generates `COOKIE_SECRET`, `PUSH_TOKEN`, `REPORT_TOKEN` and `OFFICE_PASSCODE`. It stores the push token, report token and passcode in `$D` (mode 600) and uploads all four to Cloudflare. It prints nothing secret.
    - Until the secrets are set, the Worker answers "Not configured". That is expected.
    - **Optional:** to make tapped phone alerts open the office, set `OFFICE_URL` in `[vars]` to that URL, then run `./deploy.sh` again.
-5. **Start the sync** (one instance, idempotent): `/workspace/agent-office-ui/box-client/sync-ctl.sh start`. The log is `$D/sync.log`. `set-status.sh` also starts the sync if it isn't running, so it survives box restarts once any bot reports.
+5. **Start the sync** (one instance, idempotent): `OFFICE_DIR=/workspace/office-status /workspace/agent-office-ui/box-client/sync-ctl.sh start`.
+   > **Shared box warning:** other agents may run their own office syncs on this box. Always pass `OFFICE_DIR` explicitly. `stop` and `restart` refuse to run without it, and they only kill the sync started for that exact directory. Never use `pkill` or kill sync processes by name. The log is `$D/sync.log`. `set-status.sh` also starts the sync if it isn't running, so it survives box restarts once any bot reports.
 6. **Report yourself:** `/workspace/agent-office-ui/box-client/set-status.sh "<YOUR NAME>" idle "Office set up"`.
 7. **Message each teammate** with the instruction block below. Send it through your normal teammate channel, filled in with that bot's exact name.
 8. **Hand over to the member:**
@@ -82,7 +83,7 @@ Don't edit or print anything in /workspace/office-status except through these sc
 ## Verification checklist
 - [ ] `curl -s -o /dev/null -w '%{http_code}' "$(cat $D/.office_url)/"` returns `200`. This is the login page.
 - [ ] Logging in with the passcode shows the room with every teammate's desk and its shape and color.
-- [ ] `sync-ctl.sh status` shows exactly one sync running, and `$D/sync.log` has no repeating errors.
+- [ ] `OFFICE_DIR=$D sync-ctl.sh status` shows exactly one sync running, and `$D/sync.log` has no repeating errors.
 - [ ] `set-status.sh "<YOUR NAME>" working "test" 1 2`: your desk shows "working 1/2" within about 15 seconds.
 - [ ] `set-status.sh "<YOUR NAME>" needs_you "test alert"`: a red badge and banner appear within about 15 seconds, plus a phone push if ntfy is set. Then set yourself back to `idle`.
 - [ ] Click Nudge on your desk: `check-inbox.sh "<YOUR NAME>"` prints it within about 15 seconds, and the page later shows it as seen.
@@ -90,11 +91,12 @@ Don't edit or print anything in /workspace/office-status except through these sc
 - [ ] The office loads inside the Agentic OS embed.
 
 ## Troubleshooting
-- **Alerts missing after a redeploy, or `/api/alerts` says `pending`:** the Durable Object is still running the old code because sync traffic keeps it warm. Run `sync-ctl.sh stop`, wait 2–3 minutes, then `sync-ctl.sh start`.
-- **A nudge or approve stays "queued":** the sync isn't running (`sync-ctl.sh status`). **"Delivered" but never "seen":** the bot hasn't checked its inbox. Each bot must run `check-inbox.sh`, or `set-status.sh`, at the start of every run.
+- **Alerts missing after a redeploy, or `/api/alerts` says `pending`:** the Durable Object is still running the old code because sync traffic keeps it warm. Run `OFFICE_DIR=$D sync-ctl.sh stop`, wait 2–3 minutes, then `OFFICE_DIR=$D sync-ctl.sh start`.
+- **A nudge or approve stays "queued":** the sync isn't running (`OFFICE_DIR=$D sync-ctl.sh status`). **"Delivered" but never "seen":** the bot hasn't checked its inbox. Each bot must run `check-inbox.sh`, or `set-status.sh`, at the start of every run.
 - **A desk never updates:** the reported name doesn't match the roster. Names match by name, `short`, `id` or `aliases`, ignoring case and punctuation. Fix `OFFICE_ROSTER_JSON` and redeploy.
 - **A bot shows asleep:** no update for 15 minutes is normal between runs.
 - **"Stuck?" alert:** the bot was `working` with no update for `ALERT_STUCK_MIN` minutes (default 30). Remind it to report `idle` when it finishes.
+- **One `sync error: HTTPError 500` right after `setup-secrets.sh`:** expected while the new secrets roll out. Ignore it if the next lines are clean.
 - **`sync error: HTTPError 401` in the log:** `$D/.push_token` doesn't match the Worker. Re-run `setup-secrets.sh`; this rotates all secrets and logs everyone out.
-- **Deploy fails with auth or account errors:** check the token template ("Edit Cloudflare Workers"). Set `CLOUDFLARE_ACCOUNT_ID` if the token can access several accounts, and make sure the `workers.dev` subdomain exists.
+- **Deploy fails with auth or account errors:** check the token template ("Edit Cloudflare Workers"). Make sure `CLOUDFLARE_ACCOUNT_ID` is set (error 9106 on `/memberships` means it's missing), and make sure the `workers.dev` subdomain exists.
 - **Login locked:** after 5 wrong passcodes, wait 10 minutes. Or run `curl -X POST "$(cat $D/.office_url)/reset-lockout" -H "Authorization: Bearer $(cat $D/.push_token)"`; this doesn't print the token.

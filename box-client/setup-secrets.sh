@@ -3,6 +3,7 @@
 # $OFFICE_DIR (chmod 600), and uploads them with wrangler. Prints nothing secret.
 # Needs CLOUDFLARE_API_TOKEN in the environment. Re-running ROTATES everything (everyone must log in again).
 set -euo pipefail
+[ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] || { echo "set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID first (both required)" >&2; exit 1; }
 D="${OFFICE_DIR:-/workspace/office-status}"; W="$(cd "$(dirname "$0")/../remote/worker" && pwd)"
 mkdir -p "$D"; chmod 700 "$D"; umask 077
 gen() { python3 -c 'import secrets,sys;sys.stdout.write(secrets.token_hex(32))'; }

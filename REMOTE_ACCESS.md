@@ -6,13 +6,13 @@ The Worker serves the same page behind a passcode. It keeps state in a Durable O
 ## 1. Prerequisites
 - A free Cloudflare account, and Node 18+.
 - An API token: Cloudflare dashboard → My Profile → API Tokens → "Edit Cloudflare Workers" template.
-- Export `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in your shell. Never commit them.
+- Export `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in your shell. **Both are required:** even with a single-account token, wrangler fails on `/memberships` (error 9106) without the account ID, and `deploy.sh` stops with a clear message if either is missing. Never commit them.
 
 ## 2. Configure
 ```bash
 cd remote/worker
 cp wrangler.toml.example wrangler.toml      # set a unique `name`; optionally OFFICE_TITLE / OFFICE_ROSTER_JSON / OFFICE_URL
-npm install --no-save wrangler
+npm install --no-save wrangler             # uses the included package.json
 ```
 
 ## 3. Secrets (each one is stored only in Cloudflare)
@@ -52,7 +52,8 @@ Remote endpoints have no `/api/office` prefix:
 5. Tune with `ALERT_STUCK_MIN` (default 30) and `ALERT_COOLDOWN_MIN` (default 15). The hard cap is 20 pushes per hour.
 
 ## Notes
-- After a deploy, the Durable Object can keep running the old code while traffic keeps it warm. The Worker then answers `/api/alerts` with `"pending"`. Pause any sync job for 2–3 minutes and the object will restart on the new code.
+- After a deploy, the Durable Object can keep running the old code while traffic keeps it warm. The Worker then answers `/api/alerts` with `"pending"`. Pause any sync job for 2–3 minutes (`OFFICE_DIR=<dir> box-client/sync-ctl.sh stop`, then `start`; on a shared box, never kill syncs by name) and the object will restart on the new code.
+- One sync `HTTP 500` right after setting the secrets is expected while they roll out.
 - Rotating `OFFICE_PASSCODE` or `COOKIE_SECRET` logs everyone out.
 - After 5 wrong passcodes from one IP (40 across all IPs), login locks for 10 minutes. `POST /reset-lockout` with `Bearer PUSH_TOKEN` clears it.
 
